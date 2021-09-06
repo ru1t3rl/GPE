@@ -31,12 +31,14 @@ public class GenerateGrid : MonoBehaviour
             Generate();
         }
 
+        /*
         for (int i = 0; i < vertices.Length; i++)
         {
             vertices[i].y = Random.Range(0f, 1f);
         }
 
         mesh.vertices = vertices;
+        */
 
         previousGridSize = gridSize;
     }
@@ -49,7 +51,7 @@ public class GenerateGrid : MonoBehaviour
         {
             for (int x = 0; x <= gridSize.x; x++, i++)
             {
-                vertices[i] = new Vector3(x, 0, y);
+                vertices[i] = new Vector3(x, Mathf.PerlinNoise(x * .3f, y * .2f)*3, y);
             }
         }
 
