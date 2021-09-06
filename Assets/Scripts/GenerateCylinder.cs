@@ -54,12 +54,12 @@ public class GenerateCylinder : MonoBehaviour
 
         vertices[0] = new Vector3(0, -.5f, 0);
 
-        for (int i = 1; i < nVertices / 2; i++)
+        for (int i = 0; i < (nVertices) / 2f; i++)
         {
-            x = Mathf.Sin((i - 1) / (vertices.Length / 2f) * 360f * Mathf.Deg2Rad + radius / 2f);
-            z = Mathf.Cos((i - 1) / (vertices.Length / 2f) * 360f * Mathf.Deg2Rad + radius / 2f);
+            x = Mathf.Sin(2 * MathF.PI / (nVertices / 2f) * i) * radius;
+            z = Mathf.Cos(2 * MathF.PI / (nVertices / 2f) * i) * radius;
 
-            vertices[i] = new Vector3(x, -.5f, z);
+            vertices[i + 1] = new Vector3(x, -.5f, z);
             vertices[i + vertices.Length / 2] = new Vector3(x, .5f, z);
         }
 
@@ -68,13 +68,31 @@ public class GenerateCylinder : MonoBehaviour
 
     void GenerateTriangles()
     {
-        triangles = new int[vertices.Length + vertices.Length / 2];
+        triangles = new int[(vertices.Length - 1) * 3];
 
-        for (int i = 0; i < vertices.Length / 2; i++)
+        for (int i = 0; i < (vertices.Length - 2) / 2; i++)
         {
+            #region DrawBottom
             triangles[i * 3] = 0;
+
             triangles[i * 3 + 1] = i + 1;
-            triangles[i * 3 + 2] = i + 2;
+
+            if (i + 2 >= vertices.Length / 2)
+                triangles[i * 3 + 2] = 1;
+            else
+                triangles[i * 3 + 2] = i + 2;
+            #endregion
+
+            #region Draw Top
+            triangles[(vertices.Length - 2) / 2 + i * 3] = vertices.Length - 1;
+
+            triangles[(vertices.Length - 2) / 2 + i * 3 + 1] = ((vertices.Length - 2) / 2 + 1) + i + 1;
+
+            if (i + 2 >= vertices.Length / 2)
+                triangles[(vertices.Length - 2) / 2 + i * 3 + 2] = ((vertices.Length - 2) / 2 + 1);
+            else
+                triangles[(vertices.Length - 2) / 2 + i * 3 + 2] = ((vertices.Length - 2) / 2 - 2 + 1) + i + 2;
+            #endregion
         }
     }
 
