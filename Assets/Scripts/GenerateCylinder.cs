@@ -6,7 +6,9 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class GenerateCylinder : MonoBehaviour
 {
-    [SerializeField] int radius;
+    [SerializeField, Range(0.01f, 10f)] int radius;
+    int previousRadius;
+
     [SerializeField, Range(6, 100)]
     int nVertices;
     int lastVertexCount;
@@ -26,10 +28,11 @@ public class GenerateCylinder : MonoBehaviour
 
     void Update()
     {
-        if (lastVertexCount != nVertices)
+        if (lastVertexCount != nVertices || previousRadius != radius)
             GenerateMesh();
 
         lastVertexCount = nVertices;
+        previousRadius = radius;
     }
 
     void GenerateMesh()
@@ -44,6 +47,9 @@ public class GenerateCylinder : MonoBehaviour
         mesh.RecalculateNormals();
     }
 
+    /// <summary>
+    /// Place the vertices in a circle using Sine and Cosine
+    /// </summary>
     void GenerateVertices()
     {
         float x, z;
@@ -52,50 +58,114 @@ public class GenerateCylinder : MonoBehaviour
 
         vertices = new Vector3[nVertices + 2];
 
-        vertices[0] = new Vector3(0, -.5f, 0);
+        vertices[0] = new Vector3(0, -radius / 2f, 0);
 
         for (int i = 0; i < (nVertices) / 2f; i++)
         {
-            x = Mathf.Sin(2 * MathF.PI / (nVertices / 2f) * i) * radius;
-            z = Mathf.Cos(2 * MathF.PI / (nVertices / 2f) * i) * radius;
+            x = Mathf.Sin(2 * Mathf.PI / (nVertices / 2f) * i) * radius;
+            z = Mathf.Cos(2 * Mathf.PI / (nVertices / 2f) * i) * radius;
 
-            vertices[i + 1] = new Vector3(x, -.5f, z);
-            vertices[i + vertices.Length / 2] = new Vector3(x, .5f, z);
+            vertices[i + 1] = new Vector3(x, -radius / 2f, z);
+            vertices[i + vertices.Length / 2] = new Vector3(x, radius / 2f, z);
         }
 
-        vertices[vertices.Length - 1] = new Vector3(0, .5f, 0);
+        vertices[vertices.Length - 1] = new Vector3(0, radius / 2f, 0);
     }
 
+    /// <summary>
+    /// Generate Triangles best on the vertices
+    /// </summary>
     void GenerateTriangles()
     {
-        triangles = new int[(vertices.Length - 1) * 3];
+        List<int> newTriangles = new List<int>();
+        triangles = new int[(vertices.Length) * 3];
 
         for (int i = 0; i < (vertices.Length - 2) / 2; i++)
         {
-            #region DrawBottom
+            #region Draw Bottom
+            // Center Vertex
             triangles[i * 3] = 0;
 
-            triangles[i * 3 + 1] = i + 1;
+            // First Vertex
+            triangles[i * 3 + 2] = i + 1;
 
+            // Second Vertex
             if (i + 2 >= vertices.Length / 2)
-                triangles[i * 3 + 2] = 1;
+                triangles[i * 3 + 1] = 1;
             else
-                triangles[i * 3 + 2] = i + 2;
+                triangles[i * 3 + 1] = i + 2;
             #endregion
 
             #region Draw Top
-            triangles[(vertices.Length - 2) / 2 + i * 3] = vertices.Length - 1;
+            //Center Vertex
+            triangles[(vertices.Length) / 2 * 3 + i * 3] = vertices.Length - 1;
 
-            triangles[(vertices.Length - 2) / 2 + i * 3 + 1] = ((vertices.Length - 2) / 2 + 1) + i + 1;
+            // 1st vertex
+            triangles[(vertices.Length) / 2 * 3 + i * 3 + 1] = vertices.Length / 2 + i;
 
-            if (i + 2 >= vertices.Length / 2)
-                triangles[(vertices.Length - 2) / 2 + i * 3 + 2] = ((vertices.Length - 2) / 2 + 1);
+            // last vertex check if still in vertices range
+            if (vertices.Length / 2 + i + 2 < vertices.Length)
+            {
+                triangles[(vertices.Length) / 2 * 3 + i * 3 + 2] = vertices.Length / 2 + i + 1;
+            }
             else
-                triangles[(vertices.Length - 2) / 2 + i * 3 + 2] = ((vertices.Length - 2) / 2 - 2 + 1) + i + 2;
+            {
+                triangles[(vertices.Length) / 2 * 3 + i * 3 + 2] = vertices.Length / 2;
+            }
             #endregion
         }
+
+        newTriangles.AddRange(triangles);
+
+        #region Draw Side
+        // -2 since I don't need the center vertices
+        for (int i = 0; i < (vertices.Length - 2) / 2; i++)
+        {
+
+            #region Triangle 1
+            if (i + 2 < vertices.Length / 2)
+                newTriangles.Add(i + 2);
+            else
+            {
+                newTriangles.Add(1 + (i + 2) % (vertices.Length / 2));
+            }
+
+            if (vertices.Length / 2 + i + 2 < vertices.Length - 1)
+                newTriangles.Add(vertices.Length / 2 + i + 2);
+            else
+            {
+                newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + i + 2) % (vertices.Length - 1));
+            }
+
+            if (vertices.Length / 2 + i + 1 < vertices.Length - 1)
+                newTriangles.Add(vertices.Length / 2 + i + 1);
+            else
+            {
+                newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + i + 1) % (vertices.Length - 1));
+            }
+
+
+            #endregion
+
+            #region Triangle 2
+
+            newTriangles.Add(vertices.Length / 2 + i + 1 < vertices.Length - 1 ? vertices.Length / 2 + i + 1 : vertices.Length / 2);
+
+            newTriangles.Add(i + 1 < vertices.Length / 2 ? i + 1 : 1 + (i + 1) % (vertices.Length / 2));
+
+            newTriangles.Add(i + 2 < vertices.Length / 2 ? i + 2 : 1 + (i + 2) % (vertices.Length / 2));
+            #endregion
+
+        }
+        #endregion
+
+        triangles = newTriangles.ToArray();
     }
 
+    /// <summary>
+    /// Draw gizmo's mainly for debug purpose
+    /// </summary>
+#if DEBUG
     void OnDrawGizmos()
     {
         if (vertices == null || vertices.Length == 0)
@@ -106,4 +176,5 @@ public class GenerateCylinder : MonoBehaviour
             Gizmos.DrawSphere(vertices[i], .1f);
         }
     }
+#endif
 }

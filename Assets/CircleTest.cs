@@ -5,7 +5,7 @@ using UnityEngine;
 public class CircleTest : MonoBehaviour
 {
     float radius = 1;
-    float vertices = 10;
+    //float vertices = 10;
 
     float angle = 0;
     [SerializeField] float drag;
