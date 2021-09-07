@@ -4,91 +4,85 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-public class GenerateGrid : MonoBehaviour
+namespace Ru1t3rl.MeshGen
 {
-    [SerializeField] Vector2Int gridSize;
-    Vector2Int previousGridSize;
-
-    Vector3[] vertices;
-    Vector2[] uvs;
-    int[] triangles;
-    Mesh mesh;
-
-    void Awake()
+    [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+    public class GenerateGrid : MonoBehaviour
     {
-        GetComponent<MeshFilter>().mesh = mesh = new Mesh();
-        mesh.name = "Procedural Grid";
+        [SerializeField] Vector2Int gridSize;
+        Vector2Int previousGridSize;
 
-        Generate();
-    }
+        Vector3[] vertices;
+        Vector2[] uvs;
+        int[] triangles;
+        Mesh mesh;
 
-    void Update()
-    {
-        if (previousGridSize != gridSize)
+        void Awake()
         {
-            mesh.Clear();
+            GetComponent<MeshFilter>().mesh = mesh = new Mesh();
+            mesh.name = "Procedural Grid";
+
             Generate();
         }
 
-        /*
-        for (int i = 0; i < vertices.Length; i++)
+        void Update()
         {
-            vertices[i].y = Random.Range(0f, 1f);
-        }
-
-        mesh.vertices = vertices;
-        */
-
-        previousGridSize = gridSize;
-    }
-
-    void Generate()
-    {
-        // Place the vertices
-        vertices = new Vector3[(gridSize.x + 1) * (gridSize.y + 1)];
-        for (int i = 0, y = 0; y <= gridSize.y; y++)
-        {
-            for (int x = 0; x <= gridSize.x; x++, i++)
+            if (previousGridSize != gridSize)
             {
-                vertices[i] = new Vector3(x, Mathf.PerlinNoise(x * .3f, y * .2f)*3, y);
+                mesh.Clear();
+                Generate();
             }
+
+            previousGridSize = gridSize;
         }
 
-        // Create triangles between vertices
-        triangles = new int[gridSize.x * gridSize.y * 6];
-        for (int ti = 0, vi = 0, y = 0; y < gridSize.y; y++, vi++)
+        void Generate()
         {
-            for (int x = 0; x < gridSize.x; x++, ti += 6, vi++)
+            // Place the vertices
+            vertices = new Vector3[(gridSize.x + 1) * (gridSize.y + 1)];
+            for (int i = 0, y = 0; y <= gridSize.y; y++)
             {
-                triangles[ti] = vi;
-                triangles[ti + 3] = triangles[ti + 2] = vi + 1;
-                triangles[ti + 4] = triangles[ti + 1] = vi + gridSize.x + 1;
-                triangles[ti + 5] = vi + gridSize.x + 2;
+                for (int x = 0; x <= gridSize.x; x++, i++)
+                {
+                    vertices[i] = new Vector3(x, Mathf.PerlinNoise(x * .3f, y * .2f) * 3, y);
+                }
             }
+
+            // Create triangles between vertices
+            triangles = new int[gridSize.x * gridSize.y * 6];
+            for (int ti = 0, vi = 0, y = 0; y < gridSize.y; y++, vi++)
+            {
+                for (int x = 0; x < gridSize.x; x++, ti += 6, vi++)
+                {
+                    triangles[ti] = vi;
+                    triangles[ti + 3] = triangles[ti + 2] = vi + 1;
+                    triangles[ti + 4] = triangles[ti + 1] = vi + gridSize.x + 1;
+                    triangles[ti + 5] = vi + gridSize.x + 2;
+                }
+            }
+
+            uvs = new Vector2[vertices.Length];
+            for (int i = 0; i < uvs.Length; i++)
+            {
+                uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
+            }
+
+            // Link the vertices and triangles to the mesh
+            mesh.vertices = vertices;
+            mesh.uv = uvs;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
         }
 
-        uvs = new Vector2[vertices.Length];
-        for (int i = 0; i < uvs.Length; i++)
+        void OnDrawGizmos()
         {
-            uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
-        }
+            if (vertices == null || vertices.Length == 0)
+                return;
 
-        // Link the vertices and triangles to the mesh
-        mesh.vertices = vertices;
-        mesh.uv = uvs;
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
-    }
-
-    void OnDrawGizmos()
-    {
-        if (vertices == null || vertices.Length == 0)
-            return;
-
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            Gizmos.DrawSphere(vertices[i], .1f);
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Gizmos.DrawSphere(vertices[i], .1f);
+            }
         }
     }
 }
