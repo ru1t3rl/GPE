@@ -11,6 +11,7 @@ namespace Ru1t3rl.MeshGen
     public class GenerateGrid : MonoBehaviour
     {
         [SerializeField] Texture2D heightmap;
+        Texture2D previousHeightmap;
         [SerializeField] float heightMultiplier = 2f;
         [SerializeField] LayerColor[] layerColors;
         Color[] colors;
@@ -33,13 +34,14 @@ namespace Ru1t3rl.MeshGen
 
         void Update()
         {
-            if (previousGridSize != gridSize)
+            if (previousGridSize != gridSize || previousHeightmap != heightmap)
             {
                 mesh.Clear();
                 Generate();
             }
 
             previousGridSize = gridSize;
+            previousHeightmap = heightmap;
         }
 
         void Generate()
