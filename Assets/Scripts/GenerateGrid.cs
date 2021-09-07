@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,6 +12,8 @@ namespace Ru1t3rl.MeshGen
     {
         [SerializeField] Texture2D heightmap;
         [SerializeField] float heightMultiplier = 2f;
+        [SerializeField] LayerColor[] layerColors;
+        Color[] colors;
 
         [SerializeField] Vector2Int gridSize;
         Vector2Int previousGridSize;
@@ -51,7 +54,7 @@ namespace Ru1t3rl.MeshGen
                 }
             }
 
-            if(heightmap != null)
+            if (heightmap != null)
                 ApplyHeightMap();
 
             // Create triangles between vertices
@@ -75,6 +78,7 @@ namespace Ru1t3rl.MeshGen
 
             // Link the vertices and triangles to the mesh
             mesh.vertices = vertices;
+            mesh.colors = colors;
             mesh.uv = uvs;
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
@@ -82,6 +86,9 @@ namespace Ru1t3rl.MeshGen
 
         void ApplyHeightMap()
         {
+            colors = new Color[vertices.Length];
+
+            // Set vertex height based on pixel grayscale and the heightMultiplier
             float pixelHeight = 0;
             for (int i = 0, y = 0; y <= gridSize.y; y++)
             {
@@ -89,8 +96,24 @@ namespace Ru1t3rl.MeshGen
                 {
                     pixelHeight = heightmap.GetPixel(x * (heightmap.width / gridSize.x), y * (heightmap.width / gridSize.y)).grayscale;
                     vertices[i] = new Vector3(x, pixelHeight * heightMultiplier, y);
+                    colors[i] = GetColor(pixelHeight * heightMultiplier);
                 }
             }
+        }
+
+        Color GetColor(float height)
+        {
+            int bestLayer = -1;
+            for (var iLayer = 0; iLayer < layerColors.Length; iLayer++)
+            {
+                if (bestLayer <= -1 ||
+                    (layerColors[iLayer].height <= height && layerColors[bestLayer].height < layerColors[iLayer].height))
+                {
+                    bestLayer = iLayer;
+                }
+            }
+
+            return layerColors[bestLayer].color;
         }
 
         void OnDrawGizmos()
@@ -103,5 +126,13 @@ namespace Ru1t3rl.MeshGen
                 Gizmos.DrawSphere(vertices[i], .1f);
             }
         }
+    }
+
+    [System.Serializable]
+    public class LayerColor
+    {
+        public string name;
+        public float height;
+        public Color color;
     }
 }
