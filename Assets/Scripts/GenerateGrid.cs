@@ -9,6 +9,9 @@ namespace Ru1t3rl.MeshGen
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class GenerateGrid : MonoBehaviour
     {
+        [SerializeField] Texture2D heightmap;
+        [SerializeField] float heightMultiplier = 2f;
+
         [SerializeField] Vector2Int gridSize;
         Vector2Int previousGridSize;
 
@@ -48,6 +51,9 @@ namespace Ru1t3rl.MeshGen
                 }
             }
 
+            if(heightmap != null)
+                ApplyHeightMap();
+
             // Create triangles between vertices
             triangles = new int[gridSize.x * gridSize.y * 6];
             for (int ti = 0, vi = 0, y = 0; y < gridSize.y; y++, vi++)
@@ -72,6 +78,19 @@ namespace Ru1t3rl.MeshGen
             mesh.uv = uvs;
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
+        }
+
+        void ApplyHeightMap()
+        {
+            float pixelHeight = 0;
+            for (int i = 0, y = 0; y <= gridSize.y; y++)
+            {
+                for (int x = 0; x <= gridSize.x; x++, i++)
+                {
+                    pixelHeight = heightmap.GetPixel(x * (heightmap.width / gridSize.x), y * (heightmap.width / gridSize.y)).grayscale;
+                    vertices[i] = new Vector3(x, pixelHeight * heightMultiplier, y);
+                }
+            }
         }
 
         void OnDrawGizmos()
