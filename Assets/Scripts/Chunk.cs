@@ -12,6 +12,7 @@ namespace Ru1t3rl.MeshGen
 
         Texture2D heightmap;
         float heightMultiplier;
+        Vector2Int heightmapChunkSize;
 
         Vector3[] vertices;
         int[] triangles;
@@ -20,15 +21,16 @@ namespace Ru1t3rl.MeshGen
 
         Mesh mesh;
 
-        GenerateGrid parent;
+        GenerateGrid gridParent;
 
-        public void GenerateChunk(GenerateGrid parent, Vector2Int size, Vector2Int index, Material material, Texture2D heightmap, float heightMultiplier = 1)
+        public void GenerateChunk(GenerateGrid parent, Vector2Int size, Vector2Int index, Vector2Int heightmapChunkSize, Material material, Texture2D heightmap, float heightMultiplier = 1)
         {
-            this.parent = parent;
+            this.gridParent = parent;
             this.size = size;
             this.index = index;
             this.heightmap = heightmap;
             this.heightMultiplier = heightMultiplier;
+            this.heightmapChunkSize = heightmapChunkSize;
 
             GetComponent<MeshRenderer>().materials = new Material[] { material };
             GetComponent<MeshFilter>().mesh = mesh = new Mesh();
@@ -96,13 +98,13 @@ namespace Ru1t3rl.MeshGen
 
             // Set vertex height based on pixel grayscale and the heightMultiplier
             float pixelHeight = 0;
-            for (int i = 0, z = 0; z <= size.y; z++)
+            for (int i = 0, y = 0; y <= size.y; y++)
             {
                 for (int x = 0; x <= size.x; x++, i++)
                 {
-                    pixelHeight = heightmap.GetPixel(x * (heightmap.width / size.x), z * (heightmap.width / size.y))
+                    pixelHeight = heightmap.GetPixel(heightmapChunkSize.x * index.x + heightmapChunkSize.x / size.x * x, heightmapChunkSize.y * index.y + heightmapChunkSize.y / size.y * y)
                         .grayscale;
-                    vertices[i] = new Vector3(x, pixelHeight * heightMultiplier, z);
+                    vertices[i] = new Vector3(x, pixelHeight * heightMultiplier, y);
                     colors[i] = GetColor(pixelHeight * heightMultiplier);
                 }
             }
@@ -111,17 +113,17 @@ namespace Ru1t3rl.MeshGen
         protected Color GetColor(float height)
         {
             int bestLayer = -1;
-            for (var iLayer = 0; iLayer < parent.LayerColors.Length; iLayer++)
+            for (var iLayer = 0; iLayer < gridParent.LayerColors.Length; iLayer++)
             {
                 if (bestLayer <= -1 ||
-                    (parent.LayerColors[iLayer].height <= height &&
-                     parent.LayerColors[bestLayer].height < parent.LayerColors[iLayer].height))
+                    (gridParent.LayerColors[iLayer].height <= height &&
+                     gridParent.LayerColors[bestLayer].height < gridParent.LayerColors[iLayer].height))
                 {
                     bestLayer = iLayer;
                 }
             }
 
-            return parent.LayerColors[bestLayer].color;
+            return gridParent.LayerColors[bestLayer].color;
         }
 
         public void Destroy()
