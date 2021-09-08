@@ -55,6 +55,12 @@ namespace Ru1t3rl.MeshGen
 
         protected virtual void Generate()
         {
+            if (heightmap != null)
+            {
+                gridSize.x = gridSize.x > heightmap.width ? heightmap.width : gridSize.x;
+                gridSize.y = gridSize.y > heightmap.height ? heightmap.height : gridSize.y;
+            }
+
             GenerateVertices();
             mesh.vertices = vertices;
 

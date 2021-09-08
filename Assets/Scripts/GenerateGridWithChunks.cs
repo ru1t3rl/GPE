@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Ru1t3rl.MeshGen;
-using Unity.Collections.LowLevel.Unsafe;
+using System.Linq;
 using UnityEngine;
 
 namespace Ru1t3rl.MeshGen
@@ -35,9 +34,15 @@ namespace Ru1t3rl.MeshGen
             if (chunks != null && chunks.Length > 0)
                 DestroyChunks();
 
+            if (heightmap != null)
+            {
+                gridSize.x = gridSize.x > heightmap.width ? heightmap.width : gridSize.x;
+                gridSize.y = gridSize.y > heightmap.height ? heightmap.height : gridSize.y;
+            }
+
             // Max Size per chunk is 256, this has to do with a max amount of vertices
             chunks = new Chunk[Mathf.CeilToInt(1f * gridSize.x / maxChunkSize.x), Mathf.CeilToInt(1f * gridSize.y / maxChunkSize.y)];
-            heightmapChunkSize = new Vector2Int(heightmap.width / chunks.GetLength(1), heightmap.height / chunks.GetLength(0));
+            heightmapChunkSize = heightmap == null ? Vector2Int.one : new Vector2Int(heightmap.width / chunks.GetLength(1), heightmap.height / chunks.GetLength(0));
 
             for (int y = 0; y < chunks.GetLength(0); y++)
             {
@@ -46,7 +51,7 @@ namespace Ru1t3rl.MeshGen
                     GameObject chunkObj = new GameObject($"Chunk [{x}, {y}]", typeof(MeshRenderer), typeof(MeshFilter));
                     chunkObj.transform.parent = transform;
                     chunkObj.transform.localPosition = new Vector3(x * gridSize.x / (chunks.GetLength(0) * 1f), 0, y * gridSize.y / (chunks.GetLength(1) * 1f));
-                    chunkObj.hideFlags = HideFlags.HideInHierarchy;
+                    //chunkObj.hideFlags = HideFlags.HideInHierarchy;
 
                     Chunk chunk = chunkObj.AddComponent<Chunk>();
                     chunk.GenerateChunk(

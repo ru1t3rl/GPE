@@ -126,6 +126,16 @@ namespace Ru1t3rl.MeshGen
             return gridParent.LayerColors[bestLayer].color;
         }
 
+        public void ParentInHierarchy()
+        {
+            transform.parent = gridParent.transform;
+        }
+
+        public void UnParentInHierarch()
+        {
+            transform.parent = null;
+        }
+
         public void Destroy()
         {
             Destroy(gameObject);

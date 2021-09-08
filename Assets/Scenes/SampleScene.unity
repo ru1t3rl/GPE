@@ -728,7 +728,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -752,8 +752,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 256, y: 256, z: 256}
+  m_LocalRotation: {x: -0.02609557, y: 0.32533768, z: 0.008983642, w: 0.94519514}
+  m_LocalPosition: {x: 281.403, y: 67.88915, z: 132.11317}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -824,26 +824,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b171da8f0ab8fe24a909d86692a82b2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heightmap: {fileID: 0}
-  heightMultiplier: 20
+  heightmap: {fileID: 2800000, guid: c2198437ad943e143acfc75c9a7b085a, type: 3}
+  heightMultiplier: 200
   layerColors:
   - name: Water
     height: 0
     color: {r: 0, g: 0.52252245, b: 1, a: 1}
   - name: Stone
-    height: 0.01
+    height: 0.9
     color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
   - name: Grass
-    height: 5
+    height: 35
     color: {r: 0, g: 1, b: 0.25827813, a: 1}
   - name: Stone
-    height: 10
+    height: 50
     color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
   - name: Snow
-    height: 16
+    height: 150
     color: {r: 1, g: 1, b: 1, a: 1}
-  gridSize: {x: 256, y: 256}
-  maxChunkSize: {x: 32, y: 32}
+  gridSize: {x: 1024, y: 1024}
+  maxChunkSize: {x: 128, y: 128}
   material: {fileID: 2100000, guid: 18928d6b376cb0245bdd8a0d997eec65, type: 2}
 --- !u!23 &1990698909
 MeshRenderer:
