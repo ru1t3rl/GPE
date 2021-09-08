@@ -31,7 +31,7 @@ public class GenerateSphere : MonoBehaviour
         GenerateShape();
     }
 
-    void Update()
+    void LateUpdate()
     {
 #if UNITY_EDITOR
         if (previousRings != rings || previousSegments != segments || previousRadius != radius)

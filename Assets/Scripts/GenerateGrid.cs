@@ -32,8 +32,9 @@ namespace Ru1t3rl.MeshGen
             Generate();
         }
 
-        void Update()
+        void LateUpdate()
         {
+#if UNITY_EDITOR
             if (previousGridSize != gridSize || previousHeightmap != heightmap)
             {
                 mesh.Clear();
@@ -42,6 +43,7 @@ namespace Ru1t3rl.MeshGen
 
             previousGridSize = gridSize;
             previousHeightmap = heightmap;
+#endif
         }
 
         void Generate()
