@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -10,13 +11,19 @@ namespace Ru1t3rl.MeshGen
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class GenerateGrid : MonoBehaviour
     {
-        [SerializeField] Texture2D heightmap;
+        [Header("HeightMap Settings")]
+        [SerializeField] protected Texture2D heightmap;
         Texture2D previousHeightmap;
-        [SerializeField] float heightMultiplier = 2f;
-        [SerializeField] LayerColor[] layerColors;
+        [SerializeField]
+        protected float heightMultiplier = 2f;
+        [SerializeField]
+        protected LayerColor[] layerColors;
+        public LayerColor[] LayerColors => layerColors;
         Color[] colors;
 
-        [SerializeField] Vector2Int gridSize;
+        [Header("General Grid Settings")]
+        [SerializeField]
+        protected Vector2Int gridSize;
         Vector2Int previousGridSize;
 
         Vector3[] vertices;
@@ -24,7 +31,7 @@ namespace Ru1t3rl.MeshGen
         int[] triangles;
         Mesh mesh;
 
-        void Awake()
+        protected virtual void Awake()
         {
             GetComponent<MeshFilter>().mesh = mesh = new Mesh();
             mesh.name = "Procedural Grid";
@@ -32,7 +39,7 @@ namespace Ru1t3rl.MeshGen
             Generate();
         }
 
-        void LateUpdate()
+        protected virtual void LateUpdate()
         {
 #if UNITY_EDITOR
             if (previousGridSize != gridSize || previousHeightmap != heightmap)
@@ -46,7 +53,23 @@ namespace Ru1t3rl.MeshGen
 #endif
         }
 
-        void Generate()
+        protected virtual void Generate()
+        {
+            GenerateVertices();
+            mesh.vertices = vertices;
+
+            GenerateTriangles();
+            mesh.triangles = triangles;
+
+            GenerateUVs();
+            mesh.uv = uvs;
+
+            // Link the colors and recalculate the normals
+            mesh.colors = colors;
+            mesh.RecalculateNormals();
+        }
+
+        protected virtual void GenerateVertices()
         {
             // Place the vertices
             vertices = new Vector3[(gridSize.x + 1) * (gridSize.y + 1)];
@@ -60,7 +83,10 @@ namespace Ru1t3rl.MeshGen
 
             if (heightmap != null)
                 ApplyHeightMap();
+        }
 
+        protected virtual void GenerateTriangles()
+        {
             // Create triangles between vertices
             triangles = new int[gridSize.x * gridSize.y * 6];
             for (int ti = 0, vi = 0, y = 0; y < gridSize.y; y++, vi++)
@@ -73,22 +99,18 @@ namespace Ru1t3rl.MeshGen
                     triangles[ti + 5] = vi + gridSize.x + 2;
                 }
             }
+        }
 
+        protected virtual void GenerateUVs()
+        {
             uvs = new Vector2[vertices.Length];
             for (int i = 0; i < uvs.Length; i++)
             {
                 uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
             }
-
-            // Link the vertices and triangles to the mesh
-            mesh.vertices = vertices;
-            mesh.colors = colors;
-            mesh.uv = uvs;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
         }
 
-        void ApplyHeightMap()
+        protected virtual void ApplyHeightMap()
         {
             colors = new Color[vertices.Length];
 
@@ -105,7 +127,7 @@ namespace Ru1t3rl.MeshGen
             }
         }
 
-        Color GetColor(float height)
+        protected Color GetColor(float height)
         {
             int bestLayer = -1;
             for (var iLayer = 0; iLayer < layerColors.Length; iLayer++)
