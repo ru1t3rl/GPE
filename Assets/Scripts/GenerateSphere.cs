@@ -66,11 +66,12 @@ public class GenerateSphere : MonoBehaviour
 
         vertices[0] = new Vector3(0, radius, 0);
 
-        for (int y = 1, i = 1; y < rings - 1; y++)
+        for (int y = 1, i = 1; y < rings/ - 1; y++)
         {
             // Calculate the angle of the ring compared to the center
             //angle = ((y) / (rings - 2f) * 180f) * Mathf.Deg2Rad;
             angle = y < rings / 2f ? y / (rings / 2f - 1f) * 180f : y > rings / 2f ? y / (rings / 2f - 1f) * 180f * -1f : 90f;
+            //.angle = y / (rings/2 - 1f) * 180f;
             angle *= Mathf.Deg2Rad;
 
             // Calculate the radius using SOS CAS TOA
@@ -100,19 +101,43 @@ public class GenerateSphere : MonoBehaviour
         {
             for (int iVertex = 0; iVertex < segments; iVertex++)
             {
-                /*
-                newTriangles.Add(iRing * segments + iVertex < (iRing + 1) * segments
-                    ? iRing * segments + iVertex
-                    : iRing * segments + (iRing * segments + iVertex) % ((iRing + 1) * segments));
+                #region Triangle 1
 
-                newTriangles.Add((iRing + 1) * segments + iVertex < ((iRing + 2) * segments)
-                    ? (iRing + 1) * segments + iVertex
-                    : (iRing + 1) * segments + ((iRing + 1) * segments + iVertex) % ((iRing + 2) * segments));
+                if (iVertex + 2 < vertices.Length / 2)
+                    newTriangles.Add(iVertex + 2);
+                else
+                {
+                    newTriangles.Add(1 + (iVertex + 2) % (vertices.Length / 2));
+                }
 
-                newTriangles.Add(iRing * segments + iVertex + 1 < (iRing + 1) * segments
-                    ? iRing * segments + iVertex + 1
-                    : iRing * segments + (iRing * segments + iVertex + 1) % ((iRing + 1) * segments));
-                */
+                if (vertices.Length / 2 + iVertex + 2 < vertices.Length - 1)
+                    newTriangles.Add(vertices.Length / 2 + iVertex + 2);
+                else
+                {
+                    newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + iVertex + 2) % (vertices.Length - 1));
+                }
+
+                if (vertices.Length / 2 + iVertex + 1 < vertices.Length - 1)
+                    newTriangles.Add(vertices.Length / 2 + iVertex + 1);
+                else
+                {
+                    newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + iVertex + 1) % (vertices.Length - 1));
+                }
+
+
+                #endregion
+
+                #region Triangle 2
+
+                newTriangles.Add(vertices.Length / 2 + iVertex + 1 < vertices.Length - 1
+                    ? vertices.Length / 2 + iVertex + 1
+                    : vertices.Length / 2);
+
+                newTriangles.Add(iVertex + 1 < vertices.Length / 2 ? iVertex + 1 : 1 + (iVertex + 1) % (vertices.Length / 2));
+
+                newTriangles.Add(iVertex + 2 < vertices.Length / 2 ? iVertex + 2 : 1 + (iVertex + 2) % (vertices.Length / 2));
+
+                #endregion
             }
         }
 

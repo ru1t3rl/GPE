@@ -129,30 +129,30 @@ namespace Ru1t3rl.MeshGen
             #region Draw Side
 
             // -2 since I don't need the center vertices
-            for (int i = 0; i < (vertices.Length - 2) / 2; i++)
+            for (int iVertex = 0; iVertex < (vertices.Length - 2) / 2; iVertex++)
             {
 
                 #region Triangle 1
 
-                if (i + 2 < vertices.Length / 2)
-                    newTriangles.Add(i + 2);
+                if (iVertex + 2 < vertices.Length / 2)
+                    newTriangles.Add(iVertex + 2);
                 else
                 {
-                    newTriangles.Add(1 + (i + 2) % (vertices.Length / 2));
+                    newTriangles.Add(1 + (iVertex + 2) % (vertices.Length / 2));
                 }
 
-                if (vertices.Length / 2 + i + 2 < vertices.Length - 1)
-                    newTriangles.Add(vertices.Length / 2 + i + 2);
+                if (vertices.Length / 2 + iVertex + 2 < vertices.Length - 1)
+                    newTriangles.Add(vertices.Length / 2 + iVertex + 2);
                 else
                 {
-                    newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + i + 2) % (vertices.Length - 1));
+                    newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + iVertex + 2) % (vertices.Length - 1));
                 }
 
-                if (vertices.Length / 2 + i + 1 < vertices.Length - 1)
-                    newTriangles.Add(vertices.Length / 2 + i + 1);
+                if (vertices.Length / 2 + iVertex + 1 < vertices.Length - 1)
+                    newTriangles.Add(vertices.Length / 2 + iVertex + 1);
                 else
                 {
-                    newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + i + 1) % (vertices.Length - 1));
+                    newTriangles.Add(vertices.Length / 2 + (vertices.Length / 2 + iVertex + 1) % (vertices.Length - 1));
                 }
 
 
@@ -160,13 +160,13 @@ namespace Ru1t3rl.MeshGen
 
                 #region Triangle 2
 
-                newTriangles.Add(vertices.Length / 2 + i + 1 < vertices.Length - 1
-                    ? vertices.Length / 2 + i + 1
+                newTriangles.Add(vertices.Length / 2 + iVertex + 1 < vertices.Length - 1
+                    ? vertices.Length / 2 + iVertex + 1
                     : vertices.Length / 2);
 
-                newTriangles.Add(i + 1 < vertices.Length / 2 ? i + 1 : 1 + (i + 1) % (vertices.Length / 2));
+                newTriangles.Add(iVertex + 1 < vertices.Length / 2 ? iVertex + 1 : 1 + (iVertex + 1) % (vertices.Length / 2));
 
-                newTriangles.Add(i + 2 < vertices.Length / 2 ? i + 2 : 1 + (i + 2) % (vertices.Length / 2));
+                newTriangles.Add(iVertex + 2 < vertices.Length / 2 ? iVertex + 2 : 1 + (iVertex + 2) % (vertices.Length / 2));
 
                 #endregion
 
