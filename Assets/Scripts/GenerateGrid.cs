@@ -83,7 +83,7 @@ namespace Ru1t3rl.MeshGen
             {
                 for (int x = 0; x <= gridSize.x; x++, i++)
                 {
-                    vertices[i] = new Vector3(x, Mathf.PerlinNoise(x * .3f, y * .2f) * 3, y);
+                    vertices[i] = new Vector3(x, Mathf.PerlinNoise(x * .3f, y * .2f) * heightMultiplier, y);
                 }
             }
 
@@ -139,7 +139,7 @@ namespace Ru1t3rl.MeshGen
             for (var iLayer = 0; iLayer < layerColors.Length; iLayer++)
             {
                 if (bestLayer <= -1 ||
-                    (layerColors[iLayer].height <= height && layerColors[bestLayer].height < layerColors[iLayer].height))
+                    (layerColors[iLayer].height > height && layerColors[bestLayer].height > layerColors[iLayer].height))
                 {
                     bestLayer = iLayer;
                 }

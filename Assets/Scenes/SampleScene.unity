@@ -485,23 +485,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a05f7bc7d2f706b469cf155051b24712, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heightmap: {fileID: 0}
+  heightmap: {fileID: 2800000, guid: 761aa9c6734ce9b4a9ad6904be003d7b, type: 3}
   heightMultiplier: 20
   layerColors:
-  - name: Water
+  - name: Blank
     height: 0
-    color: {r: 0, g: 0.52252245, b: 1, a: 1}
-  - name: Stone
-    height: 0.01
-    color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
-  - name: Grass
-    height: 5
-    color: {r: 0, g: 1, b: 0.25827813, a: 1}
-  - name: Stone
-    height: 10
-    color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
-  - name: Snow
-    height: 16
     color: {r: 1, g: 1, b: 1, a: 1}
   gridSize: {x: 256, y: 256}
 --- !u!23 &1336520930
@@ -752,8 +740,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: -0.02609557, y: 0.32533768, z: 0.008983642, w: 0.94519514}
-  m_LocalPosition: {x: 281.403, y: 67.88915, z: 132.11317}
+  m_LocalRotation: {x: 0.7071069, y: 0.000000014901161, z: -0.000000059604645, w: 0.7071067}
+  m_LocalPosition: {x: 128, y: 370.60568, z: 128.00005}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -825,24 +813,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   heightmap: {fileID: 2800000, guid: c2198437ad943e143acfc75c9a7b085a, type: 3}
-  heightMultiplier: 200
+  heightMultiplier: 500
   layerColors:
   - name: Water
     height: 0
     color: {r: 0, g: 0.52252245, b: 1, a: 1}
   - name: Stone
-    height: 0.9
+    height: 1
     color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
   - name: Grass
-    height: 35
+    height: 100
     color: {r: 0, g: 1, b: 0.25827813, a: 1}
   - name: Stone
-    height: 50
+    height: 150
     color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
   - name: Snow
-    height: 150
+    height: 400
     color: {r: 1, g: 1, b: 1, a: 1}
-  gridSize: {x: 1024, y: 1024}
+  gridSize: {x: 2048, y: 2048}
   maxChunkSize: {x: 128, y: 128}
   material: {fileID: 2100000, guid: 18928d6b376cb0245bdd8a0d997eec65, type: 2}
 --- !u!23 &1990698909
