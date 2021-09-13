@@ -76,5 +76,6 @@ float4 frag(v2f i) : COLOR {
         + (1.0 - _SpecColor.a) * fragmentColor;
     }
 
-    return (float4(_BaseColor * fragmentColor, 1));
+    float4 baseColor = _BaseColor * tex2D(_BaseMap, i.uv);
+    return (float4(baseColor * fragmentColor, 1));
 }

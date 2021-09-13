@@ -28,6 +28,8 @@ Shader "Custom/Toon Shader"
                 "LightMode" = "ForwardBase"
             }
 
+            Cull Off
+
             CGPROGRAM
 
             #pragma vertex vert
@@ -43,6 +45,8 @@ Shader "Custom/Toon Shader"
             
             // Blend specular hightlights over framebuffer
             Blend SrcAlpha OneMinusSrcAlpha
+            Cull Off
+            ZWrite Off
 
             CGPROGRAM
 
