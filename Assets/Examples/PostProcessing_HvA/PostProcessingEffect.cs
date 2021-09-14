@@ -10,6 +10,8 @@ public class PostProcessingEffect : MonoBehaviour {
     public Material material;
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination) {
+        if(material == null)
+            return;
 
         material.SetFloat("_Width", source.width);
 		material.SetFloat("_Height", source.height);
