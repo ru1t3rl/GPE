@@ -1,3 +1,6 @@
+/* Source:
+ *   https://danielilett.com/2019-05-11-tut1-4-smo-edge-detect/
+ */
 Shader "Custom/EdgeDetect"
 {
 	Properties

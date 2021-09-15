@@ -1,10 +1,13 @@
+/* Sources:
+*   https://en.wikibooks.org/wiki/Cg_Programming/Unity/Toon_Shading
+*/
 #include "UnityCG.cginc"
 uniform float4 _LightColor0; 
 
 uniform float4 _BaseColor;
 uniform sampler2D _BaseMap;
 uniform float4 _BaseMap_ST;
-
+uniform float _LightColorInfluence;
 uniform float4 _UnlitColor;
 uniform float _DiffuseThreshold;
 uniform float4 _OutlineColor;
@@ -64,7 +67,15 @@ float4 frag(v2f i) : COLOR {
 
     // Low priority: diffuse illumination
     if(attenuation * max(0.0, dot(normalDir, lightDir)) >= _DiffuseThreshold) {
-        fragmentColor = _LightColor0.rgb * _OutlineColor.rgb;
+        fragmentColor = _LightColor0.rgb * _LightColorInfluence + _BaseColor.rgb;
+    }
+
+    // higher priority: outline
+    if (dot(viewDir, normalDir) 
+    < lerp(_UnlitOutlineThickness, _LitOutlineThickness, 
+    max(0.0, dot(normalDir, lightDir))))
+    {
+        fragmentColor = _LightColor0.rgb * _LightColorInfluence + _OutlineColor.rgb; 
     }
 
     // highest priority: highlights

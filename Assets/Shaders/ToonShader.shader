@@ -7,6 +7,7 @@ Shader "Custom/Toon Shader"
 {
     Properties
     {
+        _LightColorInfluence ("Light Color Influence", Float) = 1
         _BaseColor("Base Color", Color) = (1, 1, 1, 1)
         _BaseMap("Base Map", 2D) = "white" {}
         _UnlitColor("Unlit Base Color", Color) = (0.5, 0.5, 0.5, 1)
