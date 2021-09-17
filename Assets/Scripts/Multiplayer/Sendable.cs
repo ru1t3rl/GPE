@@ -6,7 +6,7 @@ public class Sendable
     public int id;
     public float x, y;
     public float previousX, previousY;
-    public int frame;
+    public long timeStamp;
     public int ping;
 
     public Vector2 moveDirection

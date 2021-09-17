@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using TMPro;
+using System.Drawing;
 
 //https://forum.unity.com/threads/simple-udp-implementation-send-read-via-mono-c.15900/
 
@@ -18,11 +20,16 @@ public class NetworkScript : MonoBehaviour
     public PlayerScript[] players = new PlayerScript[2];
 
 
-    Thread updatePing;
+    [Header("Ping")]
+    Coroutine updatePing;
     private Ping ping;
     private bool threadRunning = false;
     public int pingUpdateInterval = 100;
+    public int maxPing;
+    [SerializeField] TextMeshProUGUI text;
+    bool shouldUpdatePing = true;
 
+    [Header("Testing")]
     string sendIp = "127.0.0.1";
     Sendable sendData = new Sendable();
 
@@ -47,7 +54,10 @@ public class NetworkScript : MonoBehaviour
 
         connection = new UdpConnection();
         connection.StartConnection(sendIp, sendPort, receivePort);
+
+        StartPingUpdate();
     }
+
 
     void FixedUpdate()
     {
@@ -77,16 +87,39 @@ public class NetworkScript : MonoBehaviour
         CheckIncomingMessages();
     }
 
-    private void startPingUpdate()
+    private void StartPingUpdate()
     {
-        updatePing = new Thread(() => { 
-            ping = new Ping(sendIp);
-            Thread.Sleep(pingUpdateInterval); 
-        });
-        updatePing.IsBackground = true;
-        threadRunning = true;
-        updatePing.Start();
+        updatePing = StartCoroutine(UpdatePing());
     }
+
+    IEnumerator UpdatePing() {    
+        while(true) {
+            ping = new Ping(sendIp);
+            
+            yield return new WaitForSeconds(pingUpdateInterval/1000f);
+
+            UpdateGUI();
+        }
+    }
+
+    void UpdateGUI() { 
+        text.text = $"{ping.time}ms";
+        if(ping.time <= maxPing * .25 )
+            text.color = new Color(0, 200, 0);
+        else if(ping.time <= maxPing *.5) 
+            text.color = new Color(243, 247, 0);
+        else if(ping.time <= maxPing * .75)
+            text.color = new Color(235, 149, 52);
+        else if(ping.time <= maxPing) 
+            text.color = new Color(255, 0, 0);
+        else {
+            text.color = new Color(255, 0, 0);
+            text.text = "disconnected";
+            OnDestroy();
+            Debug.Log("<b>[Newtwork Manager]</b> Connnection stopped: ping was to high");
+        }
+    }
+
 
     public void Update()
     {
@@ -98,7 +131,8 @@ public class NetworkScript : MonoBehaviour
         if (Input.GetKeyDown("a")) leftKey = true;
         if (Input.GetKeyUp("a")) leftKey = false;
         if (Input.GetKeyDown("d")) rightKey = true;
-        if (Input.GetKeyUp("d")) rightKey = false;
+        if (Input.GetKeyUp("d")) rightKey = false;        
+            
     }
 
     void CheckIncomingMessages()
@@ -141,18 +175,17 @@ public class NetworkScript : MonoBehaviour
         sendData.y = players[id].transform.position.y;
         sendData.previousX = players[id].PreviousPosition.x;
         sendData.previousY = players[id].PreviousPosition.y;
-        sendData.frame = Time.frameCount;
+        sendData.timeStamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
 
         string json = JsonUtility.ToJson(sendData); //Convert to String
-        Debug.Log(json);
 
         connection.Send(json); //send the string
     }
 
     void OnDestroy()
     {
-        threadRunning = false;
-        updatePing.Abort();
+        if(updatePing != null)
+            StopCoroutine(updatePing);
         connection.Stop();
     }
 }
