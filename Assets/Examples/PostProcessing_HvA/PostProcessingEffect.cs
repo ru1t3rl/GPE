@@ -13,6 +13,8 @@ public class PostProcessingEffect : MonoBehaviour {
         if(material == null)
             return;
 
+        Camera.main.depthTextureMode = DepthTextureMode.DepthNormals;
+
         material.SetFloat("_Width", source.width);
 		material.SetFloat("_Height", source.height);
 

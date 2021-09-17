@@ -20,6 +20,7 @@ Shader "Custom/Water"
         [Toggle] _UseReflections ("Use Reflections", Float) = 1
         _ReflectionIntensity("ReflectionIntensity", Float) = 1
         _ReflectionRefractionStrength("Reflection Refraction Strength", Range(0, 0.1)) = 0.05
+        _ReflectionFade("Reflection Fade", Range(0, 1)) = 1
         
 
         [Header(Foam)]
@@ -53,7 +54,8 @@ Shader "Custom/Water"
     }
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
+        Tags { "RenderType"="Opaque" 
+               "Queue"="Transparent" }
         //Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         LOD 200
@@ -65,7 +67,7 @@ Shader "Custom/Water"
         #pragma surface surf Standard fullforwardshadows
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
-
+           
         #include "Flow.cginc"
 
         struct Input
@@ -83,7 +85,8 @@ Shader "Custom/Water"
         // Reflections
         float _UseReflections, 
             _ReflectionRefractionStrength, 
-            _ReflectionIntensity;
+            _ReflectionIntensity,
+            _ReflectionFade;
 
         // Foam
         float _UseFoam, _FoamTiling, _FoamWidth, _FoamThreshold;
@@ -133,7 +136,7 @@ Shader "Custom/Water"
             float depthDelta = depth - i.screenPos.w;
             
             // Set color based on depth
-            fixed4 c = lerp(_ShallowWater, _DeepWater, saturate(depthDelta / _Depth));
+            fixed4 c = lerp(_ShallowWater, _DeepWater, (1 - _ReflectionFade) * saturate(depthDelta / _Depth));
 
             // Flow vectors
             float3 flow = tex2D(_FlowMap, i.uv_MainTex).rgb;
@@ -206,5 +209,5 @@ Shader "Custom/Water"
         }
         ENDCG
     }
-    FallBack "Diffuse"
+    //FallBack "Diffuse"
 }
