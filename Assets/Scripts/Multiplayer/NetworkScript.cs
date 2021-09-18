@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 using TMPro;
 using System.Drawing;
+using DG.Tweening;
 
 //https://forum.unity.com/threads/simple-udp-implementation-send-read-via-mono-c.15900/
 
@@ -19,6 +21,8 @@ public class NetworkScript : MonoBehaviour
 
     public PlayerScript[] players = new PlayerScript[2];
 
+    long delay, currentTimeStamp;
+    bool receivedInitial = false;
 
     [Header("Ping")]
     Coroutine updatePing;
@@ -28,6 +32,11 @@ public class NetworkScript : MonoBehaviour
     public int maxPing;
     [SerializeField] TextMeshProUGUI text;
     bool shouldUpdatePing = true;
+
+    [SerializeField, Range(0, 100)]
+    [Tooltip("Percentage from which to start with extrapolation")]
+    int enableExtrpolatePercentage;
+    Tweener tweenerX, tweenerY;
 
     [Header("Testing")]
     string sendIp = "127.0.0.1";
@@ -42,6 +51,7 @@ public class NetworkScript : MonoBehaviour
             sendPort = 8881;
             receivePort = 11000;
             myID = 0;
+            players[myID].id = myID;
         }
         else
         {
@@ -50,14 +60,34 @@ public class NetworkScript : MonoBehaviour
             myID = 1;
         }
 
+        pingUpdateInterval = maxPing > pingUpdateInterval ? maxPing : pingUpdateInterval;
+
         ping = new Ping(sendIp);
 
         connection = new UdpConnection();
         connection.StartConnection(sendIp, sendPort, receivePort);
 
         StartPingUpdate();
+        StartCoroutine(HandShake());
     }
 
+    IEnumerator HandShake()
+    {
+        text.text = "Connecting...";
+        players.ToList().ForEach(p =>
+        {
+            UpdatePositions(p.id);
+
+            do
+            {
+                CheckIncomingMessages();
+            } while (!receivedInitial);
+
+            receivedInitial = false;
+        });
+
+        yield return null;
+    }
 
     void FixedUpdate()
     {
@@ -92,27 +122,31 @@ public class NetworkScript : MonoBehaviour
         updatePing = StartCoroutine(UpdatePing());
     }
 
-    IEnumerator UpdatePing() {    
-        while(true) {
+    IEnumerator UpdatePing()
+    {
+        while (true)
+        {
             ping = new Ping(sendIp);
-            
-            yield return new WaitForSeconds(pingUpdateInterval/1000f);
+
+            yield return new WaitForSeconds(pingUpdateInterval / 1000f);
 
             UpdateGUI();
         }
     }
 
-    void UpdateGUI() { 
+    void UpdateGUI()
+    {
         text.text = $"{ping.time}ms";
-        if(ping.time <= maxPing * .25 )
+        if (ping.time <= maxPing * .25)
             text.color = new Color(0, 200, 0);
-        else if(ping.time <= maxPing *.5) 
+        else if (ping.time <= maxPing * .5)
             text.color = new Color(243, 247, 0);
-        else if(ping.time <= maxPing * .75)
+        else if (ping.time <= maxPing * .75)
             text.color = new Color(235, 149, 52);
-        else if(ping.time <= maxPing) 
+        else if (ping.time <= maxPing)
             text.color = new Color(255, 0, 0);
-        else {
+        else
+        {
             text.color = new Color(255, 0, 0);
             text.text = "disconnected";
             OnDestroy();
@@ -131,8 +165,8 @@ public class NetworkScript : MonoBehaviour
         if (Input.GetKeyDown("a")) leftKey = true;
         if (Input.GetKeyUp("a")) leftKey = false;
         if (Input.GetKeyDown("d")) rightKey = true;
-        if (Input.GetKeyUp("d")) rightKey = false;        
-            
+        if (Input.GetKeyUp("d")) rightKey = false;
+
     }
 
     void CheckIncomingMessages()
@@ -147,23 +181,45 @@ public class NetworkScript : MonoBehaviour
                 //now, check its id..
                 int i = sendData.id;
 
-                FixIncommingData(ref sendData);
-
                 //..and update the right player_entity:
-                players[i].transform.position = new Vector3(sendData.x, sendData.y, 0);
+                InterpolatePosition(sendData);
+                delay = (System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond) - sendData.timeStamp;
+
+                if (!receivedInitial)
+                    receivedInitial = true;
             }
         }
 
     }
 
-    void FixIncommingData(ref Sendable sendData)
+    public void InterpolatePosition(Sendable sendData)
+    {
+        if (tweenerX != null && tweenerX.IsActive())
+            tweenerX.Kill();
+        if (tweenerY != null && tweenerY.IsActive())
+            tweenerY.Kill();
+
+        if (ping.time * 1f / maxPing > enableExtrpolatePercentage)
+        {
+            tweenerX = players[sendData.id].transform.DOMoveX((players[sendData.id].transform.position.x + sendData.previousX + sendData.x) / 3f, ping.time / 1000f / 8f);
+            tweenerY = players[sendData.id].transform.DOMoveY((players[sendData.id].transform.position.y + sendData.previousY + sendData.y) / 3f, ping.time / 1000f / 8f);
+        }
+        else
+        {
+            players[sendData.id].transform.position = new Vector3(
+                (players[sendData.id].transform.position.x + sendData.previousX + sendData.x) / 3f,
+                (players[sendData.id].transform.position.y + sendData.previousY + sendData.y) / 3f,
+                0
+            );
+        }
+    }
+
+    public void ExtrapolatePosition(ref Sendable sendData)
     {
         Vector2 movement = sendData.moveDirection * players[sendData.id].Speed;
-        players[sendData.id].TranslatePlayer(movement + movement * sendData.ping / 1000f);
-        // 1s = 1000ms
-        // 715ms = .715
-        // 50ms =  .05
-        // Speed = speed + speed * ping/1000
+        currentTimeStamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
+        sendData.x += movement.x + movement.x * ((currentTimeStamp - sendData.timeStamp) / 1000f);
+        sendData.x += movement.y + movement.y * ((currentTimeStamp - sendData.timeStamp) / 1000f);
     }
 
     public void UpdatePositions(int id)
@@ -177,6 +233,9 @@ public class NetworkScript : MonoBehaviour
         sendData.previousY = players[id].PreviousPosition.y;
         sendData.timeStamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
 
+        if (ping.time * 1f / maxPing >= enableExtrpolatePercentage / 100f)
+            ExtrapolatePosition(ref sendData);
+
         string json = JsonUtility.ToJson(sendData); //Convert to String
 
         connection.Send(json); //send the string
@@ -184,7 +243,7 @@ public class NetworkScript : MonoBehaviour
 
     void OnDestroy()
     {
-        if(updatePing != null)
+        if (updatePing != null)
             StopCoroutine(updatePing);
         connection.Stop();
     }

@@ -7,6 +7,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField]
     float speed = 2;
     public float Speed => speed;
+    public int id;
 
     Vector3 previousPosition;
     public Vector3 PreviousPosition => previousPosition;
