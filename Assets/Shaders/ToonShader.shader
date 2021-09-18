@@ -23,7 +23,7 @@ Shader "Custom/Toon Shader"
     SubShader
     {
         Pass
-        {
+        {            
             // Pass for the ambient light and first light source
             Tags {
                 "LightMode" = "ForwardBase"
